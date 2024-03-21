@@ -77,6 +77,8 @@ func main() {
 
 	todoHandler := todo.NewTodoHandler(db)
 	protected.POST("/todos", todoHandler.NewTask)
+	protected.GET("/todos", todoHandler.GetTodoList)
+	protected.DELETE("/todos/:id", todoHandler.DeleteTodo)
 
 	r.Run()
 }

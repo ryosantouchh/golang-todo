@@ -1,4 +1,4 @@
-FROM golang:1.17-buster AS build
+FROM golang:1.22-alpine AS build
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY . ./
 ENV GOARCH=amd64
 
 RUN go build \
-    -Idflags "-X main.buildcommit=`git rev-parse --short HEAD` \
+    -ldflags "-X main.buildcommit=`git rev-parse --short HEAD` \
     -X main.buildtime=`date "+%Y-%m-%dT%H:%M:%S%Z:00"`" \
     -o /go/bin/app
 
