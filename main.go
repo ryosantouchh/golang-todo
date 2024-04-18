@@ -10,9 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	// "gorm.io/driver/sqlite"
 	"golang.org/x/time/rate"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+
+	// "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/ryosantouchh/golang-todo/auth"
@@ -32,7 +33,8 @@ func main() {
 	}
 
 	// open db connection
-	db, err := gorm.Open(mysql.Open(os.Getenv("DB_CONN")), &gorm.Config{})
+	// db, err := gorm.Open(mysql.Open(os.Getenv("DB_CONN")), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(os.Getenv("DB_CONN")), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -75,10 +77,12 @@ func main() {
 	protected := r.Group("/", auth.Protect([]byte(os.Getenv("SIGN"))))
 	// the signature is in the main.go -- easily read / protect
 
-	todoHandler := todo.NewTodoHandler(db)
-	protected.POST("/todos", todoHandler.NewTask)
-	protected.GET("/todos", todoHandler.GetTodoList)
-	protected.DELETE("/todos/:id", todoHandler.DeleteTodo)
+	gormStore := todo.NewGormStore(db)
+
+	todoHandler := todo.NewTodoHandler(gormStore)
+	protected.POST("/todos", todo.ConvertGinHandler(todoHandler.NewTask))
+	// protected.GET("/todos", todoHandler.GetTodoList)
+	// protected.DELETE("/todos/:id", todoHandler.DeleteTodo)
 
 	r.Run()
 }
